@@ -2,6 +2,7 @@
 
 import sys
 import os
+import platform
 import subprocess
 import time
 from datetime import datetime
@@ -91,7 +92,7 @@ supported_builds = {
 
 supported_packages = {
     "linux": [ "deb", "rpm", "tar" ],
-    "windows": [ "zip" ],
+    "windows": [ "zip", "msi" ],
     "freebsd": [ "tar" ]
 }
 
@@ -275,7 +276,7 @@ def local_changes():
 def get_system_arch():
     """Retrieve current system architecture.
     """
-    arch = os.uname()[4]
+    arch = platform.machine()
     if arch == "x86_64":
         arch = "amd64"
     elif arch == "386":
@@ -290,10 +291,7 @@ def get_system_arch():
 def get_system_platform():
     """Retrieve current system platform.
     """
-    if sys.platform.startswith("linux"):
-        return "linux"
-    else:
-        return sys.platform
+    return platform.system().lower()
 
 def get_go_version():
     """Retrieve version information for Go.
@@ -313,6 +311,7 @@ def check_path_for(b):
     for path in os.environ["PATH"].split(os.pathsep):
         path = path.strip('"')
         full_path = os.path.join(path, b)
+        full_path = "{}.exe".format(full_path) if get_system_platform() == "windows" else full_path;
         if os.path.isfile(full_path) and os.access(full_path, os.X_OK):
             return full_path
 
@@ -629,6 +628,13 @@ def package(build_output, pkg_name, version, nightly=False, iteration=1, static=
                             run("mv {}.zip {}".format(os.path.join(package_build_root, name), current_location), shell=True)
                             outfile = os.path.join(current_location, name + ".zip")
                             outfiles.append(outfile)
+                    elif package_type == 'msi':
+                        candle_cmd = "candle -nologo -dversion={} -dbuilddir={} -ext WixUtilExtension -arch x64 -o {}\telegraf.wxiobj pkg\msi\telegraf.wxs".format(
+                            package_version,
+                            os.getcwd(),
+                            os.path.join(os.getcwd(), current_location)
+                        )
+                        run(candle_cmd, shell=True)
                     elif package_type not in ['zip', 'tar'] and static or "static_" in arch:
                         logging.info("Skipping package type '{}' for static builds.".format(package_type))
                     else:
@@ -709,51 +715,7 @@ def main(args):
         logging.info("Moving to git commit: {}".format(args.commit))
         run("git checkout {}".format(args.commit))
 
-    if not args.no_get:
-        if not go_get(args.branch, update=args.update, no_uncommitted=args.no_uncommitted):
-            return 1
-
-    if args.generate:
-        if not run_generate():
-            return 1
-
-    if args.test:
-        if not run_tests(args.race, args.parallel, args.timeout, args.no_vet):
-            return 1
-
-    platforms = []
-    single_build = True
-    if args.platform == 'all':
-        platforms = supported_builds.keys()
-        single_build = False
-    else:
-        platforms = [args.platform]
-
-    for platform in platforms:
-        build_output.update( { platform : {} } )
-        archs = []
-        if args.arch == "all":
-            single_build = False
-            archs = supported_builds.get(platform)
-        else:
-            archs = [args.arch]
-
-        for arch in archs:
-            od = args.outdir
-            if not single_build:
-                od = os.path.join(args.outdir, platform, arch)
-            if not build(version=args.version,
-                         platform=platform,
-                         arch=arch,
-                         nightly=args.nightly,
-                         race=args.race,
-                         clean=args.clean,
-                         outdir=od,
-                         tags=args.build_tags,
-                         static=args.static):
-                return 1
-            build_output.get(platform).update( { arch : od } )
-
+    
     # Build packages
     if args.package:
         if not check_path_for("fpm"):

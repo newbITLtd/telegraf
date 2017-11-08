@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
+	xmlns:util="http://schemas.microsoft.com/wix/UtilExtension">
+
+	<Product	Id="*"
+				Name=""
+				Language="1033"
+				Version="$(var.version)"
+				Manufacturer="InfluxData"
+				Codepage="1252"
+				UpgradeCode="7A671F9E-1889-4486-A06F-890D1A511E8E"> <!-- Don't change the UpgradeCode -->
+
+                <Package	InstallerVersion="301"
+					Compressed="yes"
+					InstallScope="perMachine"
+					InstallPrivileges="elevated"
+					Keywords=""
+					Languages="1033"
+					SummaryCodepage="1252"
+					Description="Plugin-driven server agent for reporting metrics into InfluxDB."/>
+
+		<MajorUpgrade	AllowDowngrades="no"
+						AllowSameVersionUpgrades="yes"/>
+
+		<MediaTemplate EmbedCab="yes" />
+		
+		<PropertyRef Id="WIX_ACCOUNT_NETWORKSERVICE" />
+
+		<Feature Id="ProductFeature" Title="Telegraf" Level="1" Absent="disallow" AllowAdvertise="no" Display="expand" ConfigurableDirectory="INSTALLFOLDER">
+			<ComponentGroupRef Id="cg.main" />
+			<ComponentRef Id="c.datadir" />
+                        <ComponentRef Id="c.settingsdir" />
+			<FeatureRef Id="VCRedist" />
+		</Feature>
+
+                <?if $(sys.BUILDARCH)="x64"?>
+		<Condition Message="Setup can not be installed on x86 machine.">
+			<![CDATA[VersionNT64]]>
+		</Condition>
+		<?endif?>
+
+		<WixVariable Id="WixUILicenseRtf" Value="LICENSE" />
+		<Property Id="WIXUI_INSTALLDIR" Value="INSTALLFOLDER" />
+		<UIRef Id="WixUI_InstallDir" />
+		
+	</Product>
+
+	<Fragment>
+		<Directory Id="TARGETDIR" Name="SourceDir">
+			<Directory Id="$(var.programFileFolder)">
+					<Directory Id="INSTALLFOLDER" Name="Telegraf" />
+			</Directory>
+		</Directory>
+		<Directory Id="CommonAppDataFolder">
+            <Directory Id="dir.data" Name="Telegraf" />
+		</Directory>
+	</Fragment>
+
+	<Fragment>
+		<Component Id="c.datadir" Directory="dir.data" Guid="451FEB68-3BE8-4C0A-8D3D-3CB8627D9BA8">
+			<CreateFolder />
+		</Component>
+		<ComponentGroup Id="cg.main" Directory="INSTALLFOLDER">
+			<Component Id ="c.telegraf">
+                                <File Id="f.telegraf" Source="$(var.builddir)\telegraf.exe" KeyPath="yes" />
+                                <ServiceInstall
+                                        DisplayName="Telegraf Data Collector Service"
+                                        Description="Collects data using a series of plugins and publishes it to another series of plugins."
+                                        Name="telegraf"
+                                        Arguments="-config [INSTALLFOLDER]telegraf.conf"
+                                        Start="auto"
+                                        Type="ownProcess"
+                                        ErrorControl="ignore"
+                                        Vital="yes">
+                                    <util:ServiceConfig
+								        FirstFailureActionType='restart'
+								        SecondFailureActionType='restart'
+								        ThirdFailureActionType='none'
+								        RestartServiceDelayInSeconds="5"
+								        ResetPeriodInDays="1"/>
+                                </ServiceInstall>
+								<ServiceControl	Id="sc.telegraf"
+									Name="CollectPerf"
+									Wait="no"
+									Stop="both"
+									Remove="uninstall"/>
+			</Component>
+			<Component Id ="c.cfg" NeverOverwrite="yes">
+				<File Id="f.config" Source="etc\telegraf_windows.conf" Name="telegraf.conf" />
+			</Component>
+			<Component Id ="c.cfg.default" >
+				<File Id="f.config.default" Name="telegraf.conf.default" Source="etc\telegraf_windows.conf" />
+			</Component>
+		</ComponentGroup>
+	</Fragment>
+</Wix>
