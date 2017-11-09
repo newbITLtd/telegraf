@@ -173,7 +173,7 @@ def run_tests(race, parallel, timeout, no_vet):
 #### All Telegraf-specific content above this line
 ################
 
-def run(command, allow_failure=False, shell=False, env={}):
+def run(command, allow_failure=False, shell=False, env=os.environ.copy()):
     """Run shell command (convenience wrapper around subprocess).
     """
     out = None
