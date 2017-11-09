@@ -46,7 +46,7 @@
 		</Condition>
 		<?endif?>
 
-		<WixVariable Id="WixUILicenseRtf" Value="$(var.rootdir)\LICENSE" />
+		<WixVariable Id="WixUILicenseRtf" Value="$(var.rootdir)\LICENSE.rtf" />
 		<Property Id="WIXUI_INSTALLDIR" Value="INSTALLFOLDER" />
 		<UIRef Id="WixUI_InstallDir" />
 		
@@ -86,7 +86,7 @@
 									Stop="both"
 									Remove="uninstall"/>
 			</Component>
-			<Component Id ="c.cfg" NeverOverwrite="yes">
+			<Component Id ="c.cfg" Permanent="yes" NeverOverwrite="yes">
 				<File Id="f.config" Source="etc\telegraf_windows.conf" Name="telegraf.conf" />
 			</Component>
 			<Component Id ="c.cfg.default" >
