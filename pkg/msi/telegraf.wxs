@@ -2,8 +2,18 @@
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
 	xmlns:util="http://schemas.microsoft.com/wix/UtilExtension">
 
+	<?if $(sys.BUILDARCH)="x86"?>
+		<?define ArchName = "" ?>
+		<?define programFileFolder="ProgramFilesFolder"?>
+		<?define Win64 = "no" ?>
+	<?else?>
+		<?define ArchName = " (64 bit)" ?>
+		<?define programFileFolder="ProgramFiles64Folder"?>
+		<?define Win64 = "yes" ?>
+	<?endif?>
+	
 	<Product	Id="*"
-				Name=""
+				Name="Telegraf"
 				Language="1033"
 				Version="$(var.version)"
 				Manufacturer="InfluxData"
@@ -14,13 +24,13 @@
 					Compressed="yes"
 					InstallScope="perMachine"
 					InstallPrivileges="elevated"
-					Keywords=""
 					Languages="1033"
 					SummaryCodepage="1252"
 					Description="Plugin-driven server agent for reporting metrics into InfluxDB."/>
 
 		<MajorUpgrade	AllowDowngrades="no"
-						AllowSameVersionUpgrades="yes"/>
+						AllowSameVersionUpgrades="yes"
+						DowngradeErrorMessage="Cannot downgrade Telegraf" />
 
 		<MediaTemplate EmbedCab="yes" />
 		
@@ -50,9 +60,6 @@
 			<Directory Id="$(var.programFileFolder)">
 					<Directory Id="INSTALLFOLDER" Name="Telegraf" />
 			</Directory>
-		</Directory>
-		<Directory Id="CommonAppDataFolder">
-            <Directory Id="dir.data" Name="Telegraf" />
 		</Directory>
 	</Fragment>
 

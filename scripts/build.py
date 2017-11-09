@@ -635,12 +635,30 @@ def package(build_output, pkg_name, version, nightly=False, iteration=1, static=
                             #outfiles.append(outfile)
                             pass
                     elif package_type == 'msi':
-                        candle_cmd = "C:\\wix\\candle.exe -nologo -dversion={} -dbuilddir={} -ext WixUtilExtension -arch x64 -o {}\\telegraf.wxiobj pkg\\msi\\telegraf.wxs".format(
+                        if arch == "i386":
+                            tmpArch = "x86"
+                        else:
+                            tmpArch = "x64"
+                        candle_cmd = "C:\\wix\\candle.exe -nologo -dversion={} -dbuilddir={} -ext WixUtilExtension -arch {} -o {}\\telegraf.wxiobj pkg\\msi\\telegraf.wxs".format(
                             next_version,
                             os.getcwd(),
+                            tmpArch,
                             os.path.join(os.getcwd(), current_location)
                         )
                         run(candle_cmd, shell=True)
+                        
+                        msifile = "{}\\telegraf-{}-{}.msi".format(
+                            os.path.join(os.getcwd(), current_location),
+                            next_version,
+                            arch,
+                        )
+                        
+                        light_cmd = "C:\\wix\\light.exe -nologo -cultures:en-us -ext WixUtilExtension -o {} {}\\telegraf.wxiobj".format(
+                            msifile
+                            os.path.join(os.getcwd(), current_location)
+                        )
+                        outfiles.append(msifile)
+                        run(light_cmd, shell=True)
                     elif package_type not in ['zip', 'tar'] and static or "static_" in arch:
                         logging.info("Skipping package type '{}' for static builds.".format(package_type))
                     else:
