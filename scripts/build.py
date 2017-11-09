@@ -493,7 +493,7 @@ def build(version=None,
             build_command += " -a -installsuffix cgo "
         build_command += path
         start_time = datetime.utcnow()
-        run(build_command, shell=True env=env)
+        run(build_command, shell=True, env=env)
         end_time = datetime.utcnow()
         logging.info("Time taken: {}s".format((end_time - start_time).total_seconds()))
     return True
