@@ -46,7 +46,7 @@
 		</Condition>
 		<?endif?>
 
-		<WixVariable Id="WixUILicenseRtf" Value="LICENSE" />
+		<WixVariable Id="WixUILicenseRtf" Value="$(var.rootdir)\LICENSE" />
 		<Property Id="WIXUI_INSTALLDIR" Value="INSTALLFOLDER" />
 		<UIRef Id="WixUI_InstallDir" />
 		
@@ -68,7 +68,7 @@
                                         DisplayName="Telegraf Data Collector Service"
                                         Description="Collects data using a series of plugins and publishes it to another series of plugins."
                                         Name="telegraf"
-                                        Arguments="-config [INSTALLFOLDER]telegraf.conf"
+                                        Arguments="-config &quot;[INSTALLFOLDER]telegraf.conf&quot;"
                                         Start="auto"
                                         Type="ownProcess"
                                         ErrorControl="ignore"
