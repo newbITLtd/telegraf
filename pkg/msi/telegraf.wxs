@@ -38,9 +38,6 @@
 
 		<Feature Id="ProductFeature" Title="Telegraf" Level="1" Absent="disallow" AllowAdvertise="no" Display="expand" ConfigurableDirectory="INSTALLFOLDER">
 			<ComponentGroupRef Id="cg.main" />
-			<ComponentRef Id="c.datadir" />
-                        <ComponentRef Id="c.settingsdir" />
-			<FeatureRef Id="VCRedist" />
 		</Feature>
 
                 <?if $(sys.BUILDARCH)="x64"?>
@@ -64,9 +61,6 @@
 	</Fragment>
 
 	<Fragment>
-		<Component Id="c.datadir" Directory="dir.data" Guid="451FEB68-3BE8-4C0A-8D3D-3CB8627D9BA8">
-			<CreateFolder />
-		</Component>
 		<ComponentGroup Id="cg.main" Directory="INSTALLFOLDER">
 			<Component Id ="c.telegraf">
                                 <File Id="f.telegraf" Source="$(var.builddir)\telegraf.exe" KeyPath="yes" />
