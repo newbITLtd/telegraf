@@ -618,13 +618,15 @@ def package(build_output, pkg_name, version, nightly=False, iteration=1, static=
                                                             package_arch)
                         current_location = os.path.join(os.getcwd(), current_location)
                         if package_type == 'tar':
-                            outfile = os.path.join(current_location, name + ".tar.gz")
-                            with tarfile.open(outfile,'w:gz') as tf:
-                                for root, dirs, files in os.walk(package_build_root):
-                                    for f in files:
-                                        origin = os.path.join(root, f)
-                                        tf.add(origin, arcname=os.path.relpath(origin, package_build_root))
-                            outfiles.append(outfile)
+                            #import tarfile
+                            #outfile = os.path.join(current_location, name + ".tar.gz")
+                            #with tarfile.open(outfile,'w:gz') as tf:
+                            #    for root, dirs, files in os.walk(package_build_root):
+                            #        for f in files:
+                            #            origin = os.path.join(root, f)
+                            #            tf.add(origin, arcname=os.path.relpath(origin, package_build_root))
+                            #outfiles.append(outfile)
+                            pass
                         elif package_type == 'zip':
                             #zip_command = "cd {} && zip -r {}.zip ./*".format(package_build_root, name)
                             #run(zip_command, shell=True)
