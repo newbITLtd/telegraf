@@ -631,7 +631,7 @@ def package(build_output, pkg_name, version, nightly=False, iteration=1, static=
                             outfiles.append(outfile)
                     elif package_type == 'msi':
                         candle_cmd = "candle -nologo -dversion={} -dbuilddir={} -ext WixUtilExtension -arch x64 -o {}\telegraf.wxiobj pkg\msi\telegraf.wxs".format(
-                            package_version,
+                            next_version,
                             os.getcwd(),
                             os.path.join(os.getcwd(), current_location)
                         )
