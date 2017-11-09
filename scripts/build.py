@@ -641,7 +641,7 @@ def package(build_output, pkg_name, version, nightly=False, iteration=1, static=
                             tmpArch = "x64"
                         candle_cmd = "C:\\wix\\candle.exe -nologo -dversion={} -dbuilddir={} -ext WixUtilExtension -ext WixUIExtension -arch {} -o {}\\telegraf.wxiobj pkg\\msi\\telegraf.wxs".format(
                             next_version,
-                            os.getcwd(),
+                            os.path.join(os.getcwd(), current_location)
                             tmpArch,
                             os.path.join(os.getcwd(), current_location)
                         )
