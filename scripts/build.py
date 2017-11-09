@@ -654,7 +654,7 @@ def package(build_output, pkg_name, version, nightly=False, iteration=1, static=
                         )
                         
                         light_cmd = "C:\\wix\\light.exe -nologo -cultures:en-us -ext WixUtilExtension -o {} {}\\telegraf.wxiobj".format(
-                            msifile
+                            msifile,
                             os.path.join(os.getcwd(), current_location)
                         )
                         outfiles.append(msifile)
