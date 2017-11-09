@@ -18,7 +18,7 @@ install:
   - IF NOT EXIST "C:\Cache\gnuwin32-dep.zip" curl -o "C:\Cache\gnuwin32-dep.zip" https://dl.influxdata.com/telegraf/ci/make-3.81-dep.zip
   - IF EXIST "C:\Go" rmdir /S /Q C:\Go
   - msiexec.exe /i "C:\Cache\go1.8.1.msi" /quiet
-  - C:\Cache\wix311.exe /quiet
+  - cmd: "C:\Cache\wix311.exe" /quiet
   - 7z x "C:\Cache\gnuwin32-bin.zip" -oC:\GnuWin32 -y
   - 7z x "C:\Cache\gnuwin32-dep.zip" -oC:\GnuWin32 -y
   - go version
