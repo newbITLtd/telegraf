@@ -173,16 +173,16 @@ def run_tests(race, parallel, timeout, no_vet):
 #### All Telegraf-specific content above this line
 ################
 
-def run(command, allow_failure=False, shell=False):
+def run(command, allow_failure=False, shell=False, env={}):
     """Run shell command (convenience wrapper around subprocess).
     """
     out = None
     logging.debug("{}".format(command))
     try:
         if shell:
-            out = subprocess.check_output(command, stderr=subprocess.STDOUT, shell=shell)
+            out = subprocess.check_output(command, stderr=subprocess.STDOUT, shell=shell, env=env)
         else:
-            out = subprocess.check_output(command.split(), stderr=subprocess.STDOUT)
+            out = subprocess.check_output(command.split(), stderr=subprocess.STDOUT, env=env)
         out = out.decode('utf-8').strip()
         # logging.debug("Command output: {}".format(out))
     except subprocess.CalledProcessError as e:
@@ -441,14 +441,14 @@ def build(version=None,
     tmp_build_dir = create_temp_dir()
     for target, path in targets.items():
         logging.info("Building target: {}".format(target))
-        build_command = ""
+        env = os.environ.copy()
 
         # Handle static binary output
         if static is True or "static_" in arch:
             if "static_" in arch:
                 static = True
                 arch = arch.replace("static_", "")
-            build_command += "CGO_ENABLED=0 "
+            env["CGO_ENABLED"] = "0"
 
         # Handle variations in architecture output
         if arch == "i386" or arch == "i686":
@@ -457,23 +457,24 @@ def build(version=None,
             arch = "arm64"
         elif "arm" in arch:
             arch = "arm"
-        build_command += "GOOS={} GOARCH={} ".format(platform, arch)
+        env["GOOS"] = platform
+        env["GOARCH"] = arch
 
         if "arm" in arch:
             if arch == "armel":
-                build_command += "GOARM=5 "
+                env["GOARM"] = "5"
             elif arch == "armhf" or arch == "arm":
-                build_command += "GOARM=6 "
+                env["GOARM"] = "6"
             elif arch == "arm64":
                 # TODO(rossmcdonald) - Verify this is the correct setting for arm64
-                build_command += "GOARM=7 "
+                env["GOARM"] = "7"
             else:
                 logging.error("Invalid ARM architecture specified: {}".format(arch))
                 logging.error("Please specify either 'armel', 'armhf', or 'arm64'.")
                 return False
         if platform == 'windows':
             target = target + '.exe'
-        build_command += "go build -o {} ".format(os.path.join(outdir, target))
+        build_command = "go build -o {} ".format(os.path.join(outdir, target))
         if race:
             build_command += "-race "
         if len(tags) > 0:
@@ -492,7 +493,7 @@ def build(version=None,
             build_command += " -a -installsuffix cgo "
         build_command += path
         start_time = datetime.utcnow()
-        run(build_command, shell=True)
+        run(build_command, shell=True env=env)
         end_time = datetime.utcnow()
         logging.info("Time taken: {}s".format((end_time - start_time).total_seconds()))
     return True
