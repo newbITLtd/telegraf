@@ -638,6 +638,9 @@ def package(build_output, pkg_name, version, nightly=False, iteration=1, static=
                     elif package_type not in ['zip', 'tar'] and static or "static_" in arch:
                         logging.info("Skipping package type '{}' for static builds.".format(package_type))
                     else:
+                        if not check_path_for("fpm"):
+                            logging.error("FPM ruby gem required for packaging. Stopping.")
+                            raise Exception("FPM ruby gem required for packaging. Stopping.")
                         if package_type == 'rpm' and release and '~' in package_version:
                             package_version, suffix = package_version.split('~', 1)
                             # The ~ indicatees that this is a prerelease so we give it a leading 0.
@@ -718,9 +721,6 @@ def main(args):
     
     # Build packages
     if args.package:
-        if not check_path_for("fpm"):
-            logging.error("FPM ruby gem required for packaging. Stopping.")
-            return 1
         packages = package(build_output,
                            args.name,
                            args.version,
