@@ -718,7 +718,51 @@ def main(args):
         logging.info("Moving to git commit: {}".format(args.commit))
         run("git checkout {}".format(args.commit))
 
-    
+    if not args.no_get:
+        if not go_get(args.branch, update=args.update, no_uncommitted=args.no_uncommitted):
+            return 1
+
+    if args.generate:
+        if not run_generate():
+            return 1
+
+    if args.test:
+        if not run_tests(args.race, args.parallel, args.timeout, args.no_vet):
+            return 1
+
+    platforms = []
+    single_build = True
+    if args.platform == 'all':
+        platforms = supported_builds.keys()
+        single_build = False
+    else:
+        platforms = [args.platform]
+
+    for platform in platforms:
+        build_output.update( { platform : {} } )
+        archs = []
+        if args.arch == "all":
+            single_build = False
+            archs = supported_builds.get(platform)
+        else:
+            archs = [args.arch]
+
+        for arch in archs:
+            od = args.outdir
+            if not single_build:
+                od = os.path.join(args.outdir, platform, arch)
+            if not build(version=args.version,
+                         platform=platform,
+                         arch=arch,
+                         nightly=args.nightly,
+                         race=args.race,
+                         clean=args.clean,
+                         outdir=od,
+                         tags=args.build_tags,
+                         static=args.static):
+                return 1
+            build_output.get(platform).update( { arch : od } )
+
     # Build packages
     if args.package:
         packages = package(build_output,
