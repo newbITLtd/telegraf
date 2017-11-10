@@ -629,9 +629,9 @@ def package(build_output, pkg_name, version, nightly=False, iteration=1, static=
                             outfile = os.path.join(current_location, "telegraf-{}_{}_{}.zip".format(next_version, platform, arch))
                             
                             with zipfile.ZipFile(outfile, 'w') as zf:
-                                t = os.path.join(current_location, 'telegraf\\telegraf.exe')
-                                zf.write(t, arcname='telegraf.exe')
-                                zf.write('etc\\telegraf_windows.conf', 'telegraf\\telegraf.conf')
+                                t = os.path.join(current_location, 'telegraf.exe')
+                                zf.write(t, arcname='telegraf\\telegraf.exe')
+                                zf.write('etc\\telegraf_windows.conf', arcname='telegraf\\telegraf.conf')
                             outfiles.append(outfile)
                     elif package_type == 'msi':
                         if arch == "i386":
