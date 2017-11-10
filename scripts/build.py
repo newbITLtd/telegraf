@@ -618,21 +618,23 @@ def package(build_output, pkg_name, version, nightly=False, iteration=1, static=
                                                             package_arch)
                         current_location = os.path.join(os.getcwd(), current_location)
                         if package_type == 'tar':
-                            #import tarfile
-                            #outfile = os.path.join(current_location, name + ".tar.gz")
-                            #with tarfile.open(outfile,'w:gz') as tf:
-                            #    for root, dirs, files in os.walk(package_build_root):
-                            #        for f in files:
-                            #            origin = os.path.join(root, f)
-                            #            tf.add(origin, arcname=os.path.relpath(origin, package_build_root))
-                            #outfiles.append(outfile)
+                            tar_command = "cd {} && tar -cvzf {}.tar.gz ./*".format(package_build_root, name)
+                            run(tar_command, shell=True)
+                            run("mv {}.tar.gz {}".format(os.path.join(package_build_root, name), current_location), shell=True)
+                            outfile = os.path.join(current_location, name + ".tar.gz")
+                            outfiles.append(outfile)
                             pass
                         elif package_type == 'zip':
-                            #zip_command = "cd {} && zip -r {}.zip ./*".format(package_build_root, name)
-                            #run(zip_command, shell=True)
-                            #run("mv {}.zip {}".format(os.path.join(package_build_root, name), current_location), shell=True)
-                            #outfile = os.path.join(current_location, name + ".zip")
-                            #outfiles.append(outfile)
+                            import zipfile
+                            outfile = os.path.join(current_location, name + ".zip")
+                            
+                            with zipfile.ZipFile(outfile, 'w') as zf:
+                                zf.write(
+                                for root, dirs, files in os.walk(package_build_root):
+                                    for f in files:
+                                        origin = os.path.join(root, f)
+                                        zf.write(origin, arcname=os.path.relpath(origin, package_build_root))
+                            outfiles.append(outfile)
                             pass
                     elif package_type == 'msi':
                         if arch == "i386":
@@ -642,7 +644,7 @@ def package(build_output, pkg_name, version, nightly=False, iteration=1, static=
                         candle_cmd = "C:\\wix\\candle.exe -nologo -dversion={} -dbuilddir={} -drootdir={} -ext WixUtilExtension -ext WixUIExtension -arch {} -o {}\\telegraf.wxiobj pkg\\msi\\telegraf.wxs".format(
                             next_version,
                             os.path.join(os.getcwd(), current_location),
-							os.getcwd(),
+                            os.getcwd(),
                             tmpArch,
                             os.path.join(os.getcwd(), current_location)
                         )
