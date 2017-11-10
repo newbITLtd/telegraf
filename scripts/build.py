@@ -626,18 +626,13 @@ def package(build_output, pkg_name, version, nightly=False, iteration=1, static=
                             pass
                         elif package_type == 'zip':
                             import zipfile
-                            outfile = os.path.join(current_location, name + ".zip")
+                            outfile = os.path.join(current_location, "telegraf-{}_{}_{}.zip".format(next_version, platform, arch))
                             
                             with zipfile.ZipFile(outfile, 'w') as zf:
-                                print(current_location)
-                                for root, dirs, files in os.walk(current_location):
-                                    for f in files:
-                                        origin = os.path.join(root, f)
-                                        print(origin)
-                                        print(os.path.relpath(origin, current_location))
-                                        zf.write(origin, arcname=os.path.relpath(origin, current_location))
+                                t = os.path.join(current_location, 'telegraf\\telegraf.exe')
+                                zf.write(t, arcname='telegraf.exe')
+                                zf.write('etc\\telegraf_windows.conf', 'telegraf\\telegraf.conf')
                             outfiles.append(outfile)
-                            pass
                     elif package_type == 'msi':
                         if arch == "i386":
                             tmpArch = "x86"

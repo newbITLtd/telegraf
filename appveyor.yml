@@ -31,5 +31,5 @@ test_script:
   - cmd: C:\GnuWin32\bin\make test-windows
 
 artifacts:
-  - path: '**\telegraf.exe'
   - path: '**\telegraf*.msi'
+  - path: '**\telegraf*.zip'
