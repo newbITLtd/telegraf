@@ -629,7 +629,6 @@ def package(build_output, pkg_name, version, nightly=False, iteration=1, static=
                             outfile = os.path.join(current_location, name + ".zip")
                             
                             with zipfile.ZipFile(outfile, 'w') as zf:
-                                zf.write(
                                 for root, dirs, files in os.walk(package_build_root):
                                     for f in files:
                                         origin = os.path.join(root, f)
