@@ -629,10 +629,14 @@ def package(build_output, pkg_name, version, nightly=False, iteration=1, static=
                             outfile = os.path.join(current_location, name + ".zip")
                             
                             with zipfile.ZipFile(outfile, 'w') as zf:
+                                print(package_build_root)
                                 for root, dirs, files in os.walk(package_build_root):
                                     for f in files:
                                         origin = os.path.join(root, f)
-                                        zf.write(origin, arcname=os.path.relpath(origin, package_build_root))
+                                        name = origin[len(package_build_root)+1:]
+                                        print(origin)
+                                        print(name)
+                                        zf.write(origin, arcname=name)
                             outfiles.append(outfile)
                             pass
                     elif package_type == 'msi':
