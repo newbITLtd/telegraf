@@ -9,8 +9,6 @@ import (
 	"strconv"
 	"strings"
 
-	"time"
-
 	"github.com/influxdata/telegraf"
 	"github.com/influxdata/telegraf/plugins/outputs"
 	"time"
