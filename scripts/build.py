@@ -169,16 +169,16 @@ def run_tests(race, parallel, timeout, no_vet):
 #### All Telegraf-specific content above this line
 ################
 
-def run(command, allow_failure=False, shell=False):
+def run(command, allow_failure=False, shell=False, env=os.environ.copy()):
     """Run shell command (convenience wrapper around subprocess).
     """
     out = None
     logging.debug("{}".format(command))
     try:
         if shell:
-            out = subprocess.check_output(command, stderr=subprocess.STDOUT, shell=shell)
+            out = subprocess.check_output(command, stderr=subprocess.STDOUT, shell=shell, env=env)
         else:
-            out = subprocess.check_output(command.split(), stderr=subprocess.STDOUT)
+            out = subprocess.check_output(command.split(), stderr=subprocess.STDOUT, env=env)
         out = out.decode('utf-8').strip()
         # logging.debug("Command output: {}".format(out))
     except subprocess.CalledProcessError as e:
@@ -287,10 +287,7 @@ def get_system_arch():
 def get_system_platform():
     """Retrieve current system platform.
     """
-    if sys.platform.startswith("linux"):
-        return "linux"
-    else:
-        return sys.platform
+    return platform.system().lower()
 
 def get_go_version():
     """Retrieve version information for Go.
@@ -310,6 +307,7 @@ def check_path_for(b):
     for path in os.environ["PATH"].split(os.pathsep):
         path = path.strip('"')
         full_path = os.path.join(path, b)
+        full_path = "{}.exe".format(full_path) if get_system_platform() == "windows" else full_path;
         if os.path.isfile(full_path) and os.access(full_path, os.X_OK):
             return full_path
 
@@ -440,6 +438,7 @@ def build(version=None,
     for target, path in targets.items():
         logging.info("Building target: {}".format(target))
         build_command = ""
+        env = os.environ.copy()
 
         # Handle static binary output
         if static is True or "static_" in arch:
@@ -491,7 +490,7 @@ def build(version=None,
             build_command += " -a -installsuffix cgo "
         build_command += path
         start_time = datetime.utcnow()
-        run(build_command, shell=True)
+        run(build_command, shell=True, env=env)
         end_time = datetime.utcnow()
         logging.info("Time taken: {}s".format((end_time - start_time).total_seconds()))
     return True
@@ -627,6 +626,7 @@ def package(build_output, pkg_name, version, nightly=False, iteration=1, static=
                             run("mv {}.zip {}".format(os.path.join(package_build_root, name), current_location), shell=True)
                             outfile = os.path.join(current_location, name + ".zip")
                             outfiles.append(outfile)
+                            pass
                     elif package_type == 'msi':
                         if arch == "i386":
                             tmpArch = "x86"
