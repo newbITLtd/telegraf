@@ -34,6 +34,7 @@ build_script:
   - cmd: C:\GnuWin32\bin\make deps
   - cmd: C:\GnuWin32\bin\make telegraf
   - cmd: C:\GnuWin32\bin\make package-windows
+  - cmd: dir
 
 test_script:
   - cmd: C:\GnuWin32\bin\make check
