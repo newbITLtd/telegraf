@@ -96,7 +96,7 @@ supported_packages = {
     "freebsd": [ "tar" ]
 }
 
-next_version = '1.7.0'
+next_version = '1.8.0'
 
 ################
 #### Telegraf Functions
@@ -156,12 +156,8 @@ def go_get(branch, update=False, no_uncommitted=False):
     if local_changes() and no_uncommitted:
         logging.error("There are uncommitted changes in the current directory.")
         return False
-    if not check_path_for("gdm"):
-        logging.info("Downloading `gdm`...")
-        get_command = "go get github.com/sparrc/gdm"
-        run(get_command)
-    logging.info("Retrieving dependencies with `gdm`...")
-    run("{}/bin/gdm restore -v".format(os.environ.get("GOPATH",
+    logging.info("Retrieving dependencies with `dep`...")
+    run("{}/bin/dep ensure -v -vendor-only".format(os.environ.get("GOPATH",
         os.path.expanduser("~/go"))))
     return True
 
@@ -173,16 +169,16 @@ def run_tests(race, parallel, timeout, no_vet):
 #### All Telegraf-specific content above this line
 ################
 
-def run(command, allow_failure=False, shell=False, env=os.environ.copy()):
+def run(command, allow_failure=False, shell=False):
     """Run shell command (convenience wrapper around subprocess).
     """
     out = None
     logging.debug("{}".format(command))
     try:
         if shell:
-            out = subprocess.check_output(command, stderr=subprocess.STDOUT, shell=shell, env=env)
+            out = subprocess.check_output(command, stderr=subprocess.STDOUT, shell=shell)
         else:
-            out = subprocess.check_output(command.split(), stderr=subprocess.STDOUT, env=env)
+            out = subprocess.check_output(command.split(), stderr=subprocess.STDOUT)
         out = out.decode('utf-8').strip()
         # logging.debug("Command output: {}".format(out))
     except subprocess.CalledProcessError as e:
@@ -276,7 +272,7 @@ def local_changes():
 def get_system_arch():
     """Retrieve current system architecture.
     """
-    arch = platform.machine()
+    arch = os.uname()[4]
     if arch == "x86_64":
         arch = "amd64"
     elif arch == "386":
@@ -291,7 +287,10 @@ def get_system_arch():
 def get_system_platform():
     """Retrieve current system platform.
     """
-    return platform.system().lower()
+    if sys.platform.startswith("linux"):
+        return "linux"
+    else:
+        return sys.platform
 
 def get_go_version():
     """Retrieve version information for Go.
@@ -311,7 +310,6 @@ def check_path_for(b):
     for path in os.environ["PATH"].split(os.pathsep):
         path = path.strip('"')
         full_path = os.path.join(path, b)
-        full_path = "{}.exe".format(full_path) if get_system_platform() == "windows" else full_path;
         if os.path.isfile(full_path) and os.access(full_path, os.X_OK):
             return full_path
 
@@ -441,40 +439,40 @@ def build(version=None,
     tmp_build_dir = create_temp_dir()
     for target, path in targets.items():
         logging.info("Building target: {}".format(target))
-        env = os.environ.copy()
+        build_command = ""
 
         # Handle static binary output
         if static is True or "static_" in arch:
             if "static_" in arch:
                 static = True
                 arch = arch.replace("static_", "")
-            env["CGO_ENABLED"] = "0"
+            build_command += "CGO_ENABLED=0 "
 
         # Handle variations in architecture output
+        goarch = arch
         if arch == "i386" or arch == "i686":
-            arch = "386"
+            goarch = "386"
         elif "arm64" in arch:
-            arch = "arm64"
+            goarch = "arm64"
         elif "arm" in arch:
-            arch = "arm"
-        env["GOOS"] = platform
-        env["GOARCH"] = arch
+            goarch = "arm"
+        build_command += "GOOS={} GOARCH={} ".format(platform, goarch)
 
         if "arm" in arch:
             if arch == "armel":
-                env["GOARM"] = "5"
+                build_command += "GOARM=5 "
             elif arch == "armhf" or arch == "arm":
-                env["GOARM"] = "6"
+                build_command += "GOARM=6 "
             elif arch == "arm64":
                 # TODO(rossmcdonald) - Verify this is the correct setting for arm64
-                env["GOARM"] = "7"
+                build_command += "GOARM=7 "
             else:
                 logging.error("Invalid ARM architecture specified: {}".format(arch))
                 logging.error("Please specify either 'armel', 'armhf', or 'arm64'.")
                 return False
         if platform == 'windows':
             target = target + '.exe'
-        build_command = "go build -o {} ".format(os.path.join(outdir, target))
+        build_command += "go build -o {} ".format(os.path.join(outdir, target))
         if race:
             build_command += "-race "
         if len(tags) > 0:
@@ -493,7 +491,7 @@ def build(version=None,
             build_command += " -a -installsuffix cgo "
         build_command += path
         start_time = datetime.utcnow()
-        run(build_command, shell=True, env=env)
+        run(build_command, shell=True)
         end_time = datetime.utcnow()
         logging.info("Time taken: {}s".format((end_time - start_time).total_seconds()))
     return True
@@ -623,15 +621,11 @@ def package(build_output, pkg_name, version, nightly=False, iteration=1, static=
                             run("mv {}.tar.gz {}".format(os.path.join(package_build_root, name), current_location), shell=True)
                             outfile = os.path.join(current_location, name + ".tar.gz")
                             outfiles.append(outfile)
-                            pass
                         elif package_type == 'zip':
-                            import zipfile
-                            outfile = os.path.join(current_location, "telegraf-{}_{}_{}.zip".format(next_version, platform, arch))
-                            
-                            with zipfile.ZipFile(outfile, 'w') as zf:
-                                t = os.path.join(current_location, 'telegraf.exe')
-                                zf.write(t, arcname='telegraf\\telegraf.exe')
-                                zf.write('etc\\telegraf_windows.conf', arcname='telegraf\\telegraf.conf')
+                            zip_command = "cd {} && zip -r {}.zip ./*".format(package_build_root, name)
+                            run(zip_command, shell=True)
+                            run("mv {}.zip {}".format(os.path.join(package_build_root, name), current_location), shell=True)
+                            outfile = os.path.join(current_location, name + ".zip")
                             outfiles.append(outfile)
                     elif package_type == 'msi':
                         if arch == "i386":
@@ -662,9 +656,6 @@ def package(build_output, pkg_name, version, nightly=False, iteration=1, static=
                     elif package_type not in ['zip', 'tar'] and static or "static_" in arch:
                         logging.info("Skipping package type '{}' for static builds.".format(package_type))
                     else:
-                        if not check_path_for("fpm"):
-                            logging.error("FPM ruby gem required for packaging. Stopping.")
-                            raise Exception("FPM ruby gem required for packaging. Stopping.")
                         if package_type == 'rpm' and release and '~' in package_version:
                             package_version, suffix = package_version.split('~', 1)
                             # The ~ indicatees that this is a prerelease so we give it a leading 0.
@@ -789,6 +780,9 @@ def main(args):
 
     # Build packages
     if args.package:
+        if not check_path_for("fpm"):
+            logging.error("FPM ruby gem required for packaging. Stopping.")
+            return 1
         packages = package(build_output,
                            args.name,
                            args.version,
