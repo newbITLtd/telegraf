@@ -106,20 +106,17 @@ package-nightly:
 	./scripts/build.py --nightly --package --platform=all --arch=all \
 		--upload --bucket=dl.influxdata.com/telegraf/nightlies
 
-
 .PHONY: package-linux
 package-linux:
 	./scripts/build.py --package --platform=linux --arch=all
-
 
 .PHONY: package-linux-amd64
 package-linux-amd64:
 	./scripts/build.py --package --platform=linux --arch=amd64
 
-
 .PHONY: package-windows
 package-windows:
-    ./scripts/build.py --package --platform=windows --arch=all
+	./scripts/build.py --package --platform=windows --arch=all
 
 .PHONY: clean
 clean:
