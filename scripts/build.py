@@ -272,7 +272,7 @@ def local_changes():
 def get_system_arch():
     """Retrieve current system architecture.
     """
-    arch = os.uname()[4]
+    arch = platform.machine()
     if arch == "x86_64":
         arch = "amd64"
     elif arch == "386":
