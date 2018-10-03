@@ -108,13 +108,13 @@ package-nightly:
 
 
 .PHONY: package-linux
-package-windows:
-./scripts/build.py --package --platform=linux --arch=all
+package-linux:
+	./scripts/build.py --package --platform=linux --arch=all
 
 
-.PHONY: package-linux-amd65
-package-windows:
-./scripts/build.py --package --platform=linux --arch=amd64
+.PHONY: package-linux-amd64
+package-linux-amd64:
+	./scripts/build.py --package --platform=linux --arch=amd64
 
 
 .PHONY: package-windows
