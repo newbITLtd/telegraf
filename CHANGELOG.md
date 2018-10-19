@@ -1,16 +1,38 @@
 ## v1.7.4 [unreleased]
 ## v1.8.1 [unreleased]
+## v1.8.3 [unreleased]
+
+- [#4873](https://github.com/influxdata/telegraf/pull/4873): Add DN attributes as tags in x509_cert input to avoid series overwrite.
+
+## v1.8.2 [2018-10-17]
+
+### Bugfixes
+
+- [#4844](https://github.com/influxdata/telegraf/pull/4844): Update write path to match updated InfluxDB v2 API.
+- [#4840](https://github.com/influxdata/telegraf/pull/4840): Fix missing timeouts in vsphere input.
+- [#4851](https://github.com/influxdata/telegraf/pull/4851): Support uint fields in aerospike input.
+- [#4854](https://github.com/influxdata/telegraf/pull/4854): Use container name from list if no name in container stats.
+- [#4850](https://github.com/influxdata/telegraf/pull/4850): Prevent panic in filecount input on error in file stat.
+- [#4846](https://github.com/influxdata/telegraf/pull/4846): Fix mqtt_consumer connect and reconnect.
+- [#4849](https://github.com/influxdata/telegraf/pull/4849): Fix panic in logparser input.
+- [#4869](https://github.com/influxdata/telegraf/pull/4869): Lower authorization errors to debug level in mongodb input.
+- [#4875](https://github.com/influxdata/telegraf/pull/4875): Return correct response code on ping input.
+- [#4874](https://github.com/influxdata/telegraf/pull/4874): Fix segfault in x509_cert input.
+
+## v1.8.1 [2018-10-03]
 
 ### Bugfixes
 
 - [#4750](https://github.com/influxdata/telegraf/pull/4750): Fix hardware_type may be truncated in sqlserver input.
 - [#4723](https://github.com/influxdata/telegraf/issues/4723): Improve performance in basicstats aggregator.
-- [#4747](https://github.com/influxdata/telegraf/pull/4723): Add hostname to TLS config for SNI support.
+- [#4747](https://github.com/influxdata/telegraf/pull/4747): Add hostname to TLS config for SNI support.
 - [#4675](https://github.com/influxdata/telegraf/issues/4675): Don't add tags with empty values to opentsdb output.
 - [#4765](https://github.com/influxdata/telegraf/pull/4765): Fix panic during network error in vsphere input.
 - [#4766](https://github.com/influxdata/telegraf/pull/4766): Unify http_listener error response with InfluxDB.
 - [#4769](https://github.com/influxdata/telegraf/pull/4769): Add UUID to VMs in vSphere input.
 - [#4758](https://github.com/influxdata/telegraf/issues/4758): Skip tags with empty values in cloudwatch output.
+- [#4783](https://github.com/influxdata/telegraf/issues/4783): Fix missing non-realtime samples in vSphere input.
+- [#4799](https://github.com/influxdata/telegraf/pull/4799): Fix case of timezone/grok_timezone options.
 
 ## v1.8 [2018-09-21]
 
