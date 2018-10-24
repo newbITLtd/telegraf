@@ -118,6 +118,10 @@ package-linux-amd64:
 package-windows:
 	./scripts/build.py --package --platform=windows --arch=all
 
+.PHONY: package-windows-amd64
+package-windows-amd64:
+	./scripts/build.py --package --platform=windows --arch=amd64
+
 .PHONY: clean
 clean:
 	rm -f telegraf

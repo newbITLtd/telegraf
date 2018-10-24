@@ -437,7 +437,6 @@ def build(version=None,
     tmp_build_dir = create_temp_dir()
     for target, path in targets.items():
         logging.info("Building target: {}".format(target))
-        build_command = ""
         env = os.environ.copy()
 
         # Handle static binary output
@@ -445,7 +444,7 @@ def build(version=None,
             if "static_" in arch:
                 static = True
                 arch = arch.replace("static_", "")
-            build_command += "CGO_ENABLED=0 "
+            env["CGO_ENABLED"] = "0"
 
         # Handle variations in architecture output
         goarch = arch
@@ -455,23 +454,27 @@ def build(version=None,
             goarch = "arm64"
         elif "arm" in arch:
             goarch = "arm"
-        build_command += "GOOS={} GOARCH={} ".format(platform, goarch)
+        env["GOOS"] = platform
+        env["GOARCH"] = goarch
 
         if "arm" in arch:
             if arch == "armel":
                 build_command += "GOARM=5 "
+                env["GOARM"] = "5"
             elif arch == "armhf" or arch == "arm":
                 build_command += "GOARM=6 "
+                env["GOARM"] = "6"
             elif arch == "arm64":
                 # TODO(rossmcdonald) - Verify this is the correct setting for arm64
                 build_command += "GOARM=7 "
+                env["GOARM"] = "7"
             else:
                 logging.error("Invalid ARM architecture specified: {}".format(arch))
                 logging.error("Please specify either 'armel', 'armhf', or 'arm64'.")
                 return False
         if platform == 'windows':
             target = target + '.exe'
-        build_command += "go build -o {} ".format(os.path.join(outdir, target))
+        build_command = "go build -o {} ".format(os.path.join(outdir, target))
         if race:
             build_command += "-race "
         if len(tags) > 0:
@@ -621,10 +624,13 @@ def package(build_output, pkg_name, version, nightly=False, iteration=1, static=
                             outfile = os.path.join(current_location, name + ".tar.gz")
                             outfiles.append(outfile)
                         elif package_type == 'zip':
-                            zip_command = "cd {} && zip -r {}.zip ./*".format(package_build_root, name)
-                            run(zip_command, shell=True)
-                            run("mv {}.zip {}".format(os.path.join(package_build_root, name), current_location), shell=True)
-                            outfile = os.path.join(current_location, name + ".zip")
+                            import zipfile
+                            outfile = os.path.join(current_location, "telegraf-{}_{}_{}.zip".format(next_version, platform, arch))
+                             
+                            with zipfile.ZipFile(outfile, 'w') as zf:
+                                t = os.path.join(current_location, 'telegraf.exe')
+                                zf.write(t, arcname='telegraf\\telegraf.exe')
+                                zf.write('etc\\telegraf_windows.conf', arcname='telegraf\\telegraf.conf')
                             outfiles.append(outfile)
                             pass
                     elif package_type == 'msi':

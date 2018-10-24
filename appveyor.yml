@@ -33,7 +33,7 @@ install:
 build_script:
   - cmd: C:\GnuWin32\bin\make deps
   - cmd: C:\GnuWin32\bin\make telegraf
-  - cmd: C:\GnuWin32\bin\make package-windows
+  - cmd: C:\GnuWin32\bin\make package-windows-amd64
   - cmd: dir
 
 test_script:
