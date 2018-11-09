@@ -641,7 +641,7 @@ def package(build_output, pkg_name, version, nightly=False, iteration=1, static=
                         if version is None:
                             msi_version = next_version
                         else:
-                            msi_verison = version
+                            msi_version = version
         
                         if arch == "i386":
                             tmpArch = "x86"
