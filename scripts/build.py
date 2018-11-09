@@ -223,8 +223,12 @@ def increment_minor_version(version):
 def get_current_version_tag():
     """Retrieve the raw git version tag.
     """
-    version = run("git describe --exact-match --tags 2>/dev/null",
-            allow_failure=True, shell=True)
+    if platform.system() == 'Windows':
+        version = run("shell git describe --exact-match --tags 2>nil",
+                    allow_failure=True, shell=True)
+    else:
+        version = run("git describe --exact-match --tags 2>/dev/null",
+                allow_failure=True, shell=True)
     return version
 
 def get_current_version():
