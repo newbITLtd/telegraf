@@ -224,7 +224,7 @@ def get_current_version_tag():
     """Retrieve the raw git version tag.
     """
     if platform.system() == 'Windows':
-        version = run("shell git describe --exact-match --tags 2>nil",
+        version = run("git describe --exact-match --tags 2>nil",
                     allow_failure=True, shell=True)
     else:
         version = run("git describe --exact-match --tags 2>/dev/null",
@@ -638,12 +638,17 @@ def package(build_output, pkg_name, version, nightly=False, iteration=1, static=
                             outfiles.append(outfile)
                             pass
                     elif package_type == 'msi':
+                        if version is None:
+                            msi_version = next_version
+                        else:
+                            msi_verison = version
+        
                         if arch == "i386":
                             tmpArch = "x86"
                         else:
                             tmpArch = "x64"
                         candle_cmd = "C:\\wix\\candle.exe -nologo -dversion={} -dbuilddir={} -drootdir={} -ext WixUtilExtension -ext WixUIExtension -arch {} -o {}\\telegraf.wxiobj pkg\\msi\\telegraf.wxs".format(
-                            package_version,
+                            msi_version,
                             os.path.join(os.getcwd(), current_location),
                             os.getcwd(),
                             tmpArch,
@@ -653,7 +658,7 @@ def package(build_output, pkg_name, version, nightly=False, iteration=1, static=
                         
                         msifile = "{}\\telegraf-{}-{}.msi".format(
                             os.path.join(os.getcwd(), current_location),
-                            package_version,
+                            msi_version,
                             arch,
                         )
                         
