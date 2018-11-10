@@ -583,6 +583,12 @@ def package(build_output, pkg_name, version, nightly=False, iteration=1, static=
                     # since they may be modified below.
                     package_version = version
                     package_iteration = iteration
+
+                    if version is None or not re.match(r'([\d.]+)',version):
+                        msi_version = next_version
+                    else:
+                        msi_version = re.match(r'([\d.]+)',version).group(1)
+
                     if "static_" in arch:
                         # Remove the "static_" from the displayed arch on the package
                         package_arch = arch.replace("static_", "")
@@ -629,7 +635,7 @@ def package(build_output, pkg_name, version, nightly=False, iteration=1, static=
                             outfiles.append(outfile)
                         elif package_type == 'zip':
                             import zipfile
-                            outfile = os.path.join(current_location, "telegraf-{}_{}_{}.zip".format(next_version, platform, arch))
+                            outfile = os.path.join(current_location, "telegraf-{}_{}_{}.zip".format(msi_version, platform, arch))
                              
                             with zipfile.ZipFile(outfile, 'w') as zf:
                                 t = os.path.join(current_location, 'telegraf.exe')
@@ -638,12 +644,6 @@ def package(build_output, pkg_name, version, nightly=False, iteration=1, static=
                             outfiles.append(outfile)
                             pass
                     elif package_type == 'msi':
-
-                        if version is None or not re.match(r'([\d.]+)',version):
-                            msi_version = next_version
-                        else:
-                            msi_version = re.match(r'([\d.]+)',version).group(1)
-                            
                         if arch == "i386":
                             tmpArch = "x86"
                         else:
