@@ -638,11 +638,12 @@ def package(build_output, pkg_name, version, nightly=False, iteration=1, static=
                             outfiles.append(outfile)
                             pass
                     elif package_type == 'msi':
-                        if version is None:
+
+                        if version is None or not re.match(r'([\d.]+)',version):
                             msi_version = next_version
                         else:
-                            msi_version = version
-        
+                            msi_version = re.match(r'([\d.]+)',version).group(1)
+                            
                         if arch == "i386":
                             tmpArch = "x86"
                         else:
